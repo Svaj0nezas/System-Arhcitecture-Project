@@ -17,5 +17,7 @@ class Divider(bitWidth: Int) extends Module {
     val quotient = RegInit(VecInit(Seq.fill(bitWidth)(0.U(1.W))))   //= {dividend[i:0], quotient[N−1:i+1]}, where dividend is the input dividend and quotient is the final output quotient, and i is the current cycle
     val divisor = RegInit(0.U(bitWidth.W))         //divisor
     
-    ??? // TODO: implement Problem 1.1 here
+    for (i <- bitWidth - 1 to 0 by -1) {
+        
+    } 
 }
