@@ -18,6 +18,6 @@ class Divider(bitWidth: Int) extends Module {
     val divisor = RegInit(0.U(bitWidth.W))         //divisor
     
     for (i <- bitWidth - 1 to 0 by -1) {
-        
+        //gaming holy moly
     } 
 }
