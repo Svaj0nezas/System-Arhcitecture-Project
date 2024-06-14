@@ -33,8 +33,8 @@ class Divider(bitWidth: Int) extends Module {
             r := r - divisor
         }
         when(clock === 0.U){
-            io.quotient := quotient
-            io.remainder := r
+            io.quotient := Cat(quotient.reverse)
+            io.remainder := r(bitWidth-1, 0)
             io.done := true.B
         }
     }
