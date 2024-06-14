@@ -19,23 +19,22 @@ class Divider(bitWidth: Int) extends Module {
     val clock = RegInit(0.U(bitWidth.W))
     
     when(io.start){
+        io.done := false.B
         clock := bitWidth.U - 1.U
-        remainder := 0.U
         divisor := io.divisor
-        quotient(clock) := dividend(clock)
+        remainder := io.dividend
     }.otherwise{
         clock := clock - 1.U
-        val r := (remainder << 1) + dividend(clock)
+        val r := (r<<1) | remainder(clock)
         when(r < divisor){
-            quotient(clock) := 0
-            remainder := r
+            quotient(clock) := 0.U
         }.otherwise{
-            quotient(clock) := 1
-            remainder := r - divisor
+            quotient(clock) := 1.U
+            r := r - divisor
         }
-        when(clock === 0){
+        when(clock === 0.U){
             io.quotient := quotient
-            io.remainder := remainder
+            io.remainder := r
             io.done := true.B
         }
     }
