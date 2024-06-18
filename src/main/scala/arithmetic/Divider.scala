@@ -16,29 +16,41 @@ class Divider(bitWidth: Int) extends Module {
     val remainder = RegInit(0.U(bitWidth.W))       //current remainder
     val quotient = RegInit(VecInit(Seq.fill(bitWidth)(0.U(1.W))))   //= {dividend[i:0], quotient[N−1:i+1]}, where dividend is the input dividend and quotient is the final output quotient, and i is the current cycle
     val divisor = RegInit(0.U(bitWidth.W))         //divisor
-    val counter = RegInit(0.U(bitWidth.W))
-    val r = RegInit(0.U(bitWidth.W))
-    
-    when(io.start){
-        io.done := false.B
-        counter := bitWidth.U - 1.U
-        divisor := io.divisor
-        remainder := 0.U
-        quotient := io.dividend
-    }.otherwise{
-        counter := counter - 1.U
-        remainder(0.U) := quotient(counter)
-        when(remainder < divisor){
-            quotient(counter) := 0.U
-            remainder := remainder << 1 
-        }.otherwise{
-            quotient(counter) := 1.U
-            remainder := remainder - divisor
+    val counter = RegInit(0.U(log2Ceil(bitWidth).W))    //when getting a warning about the size of the bits in the vector, chat gpt showed me to do this log func
+    val running = RegInit(false.B)
+    val progcount = RegInit(0.U(bitWidth.W))
+    io.quotient := 0.U
+    io.remainder := 0.U
+    io.done := false.B
+
+
+        when(io.start){
+            counter := (bitWidth-1).U
+            divisor := io.divisor
+            remainder := 0.U
+            running := true.B
+            progcount := bitWidth.U
+            for (i <- 0 until bitWidth) {quotient(i) := io.dividend(i)}
         }
-        when(counter === 0.U){
-            io.quotient := Cat(quotient.reverse)
-            io.remainder := r(bitWidth-1, 0)
-            io.done := true.B
+        .elsewhen(running){
+            val nextRemainder = Wire(UInt(bitWidth.W))
+            nextRemainder :=  (remainder << 1) | quotient(counter)
+            when(nextRemainder >= divisor){
+                quotient(counter) := 1.U
+                remainder := nextRemainder - divisor
+                printf(p"$nextRemainder")
+            }.otherwise{
+                quotient(counter) := 0.U
+                remainder := nextRemainder
+            }
+            printf(p"$quotient $remainder $divisor $counter\n")
+            when(progcount === 0.U){     //IMPLEMENT CLOCK, EVERYTHING ELSE WORKS
+
+                io.quotient := quotient.asUInt
+                io.remainder := remainder
+                io.done := true.B
+            }
+            counter := counter - 1.U
+            progcount := progcount - 1.U
         }
     }
-}

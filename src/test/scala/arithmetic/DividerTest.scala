@@ -68,6 +68,6 @@ class DividerTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
 
 
   "Divider" should "correctly divide two numbers" in {
-    randomDividerTest(new Divider(6), 6, 1000, false)
+    randomDividerTest(new Divider(6), 6, 1000, true)
   }
 }
