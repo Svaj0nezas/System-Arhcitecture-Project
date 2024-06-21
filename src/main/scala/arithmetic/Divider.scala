@@ -31,8 +31,7 @@ class Divider(bitWidth: Int) extends Module {
             running := true.B
             progcount := bitWidth.U
             for (i <- 0 until bitWidth) {quotient(i) := io.dividend(i)}
-        }
-        .elsewhen(running){
+        }.elsewhen(running){
             val nextRemainder = Wire(UInt(bitWidth.W))
             nextRemainder :=  (remainder << 1) | quotient(counter)
             when(nextRemainder >= divisor){
