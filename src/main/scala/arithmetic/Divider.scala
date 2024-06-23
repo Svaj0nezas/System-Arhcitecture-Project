@@ -16,10 +16,40 @@ class Divider(bitWidth: Int) extends Module {
     val remainder = RegInit(0.U(bitWidth.W))       //current remainder
     val quotient = RegInit(VecInit(Seq.fill(bitWidth)(0.U(1.W))))   //= {dividend[i:0], quotient[N−1:i+1]}, where dividend is the input dividend and quotient is the final output quotient, and i is the current cycle
     val divisor = RegInit(0.U(bitWidth.W))         //divisor
-    
+    val counter = RegInit(0.U(log2Ceil(bitWidth).W))    //when getting a warning about the size of the bits in the vector, chat gpt showed me to do this log func
+    val running = RegInit(false.B)
+    val progcount = RegInit(0.U(bitWidth.W))
+    io.quotient := 0.U
+    io.remainder := 0.U
+    io.done := false.B
 
-    // Simon branch
-    for (i <- bitWidth - 1 to 0 by -1) {
-        
-    } 
-}
+
+        when(io.start){
+            counter := (bitWidth-1).U
+            divisor := io.divisor
+            remainder := 0.U
+            running := true.B
+            progcount := bitWidth.U
+            for (i <- 0 until bitWidth) {quotient(i) := io.dividend(i)}
+        }.elsewhen(running){
+            val nextRemainder = Wire(UInt(bitWidth.W))
+            nextRemainder :=  (remainder << 1) | quotient(counter)
+            when(nextRemainder >= divisor){
+                quotient(counter) := 1.U
+                remainder := nextRemainder - divisor
+                
+            }.otherwise{
+                quotient(counter) := 0.U
+                remainder := nextRemainder
+            }
+            
+            when(progcount === 0.U){     //IMPLEMENT CLOCK, EVERYTHING ELSE WORKS
+
+                io.quotient := quotient.asUInt
+                io.remainder := remainder
+                io.done := true.B
+            }
+            counter := counter - 1.U
+            progcount := progcount - 1.U
+        }
+    }

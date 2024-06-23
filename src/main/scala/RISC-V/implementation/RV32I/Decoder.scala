@@ -73,5 +73,21 @@ class Decoder extends AbstractDecoder {
       io_decoder.rd := 0.U
       io_decoder.imm := Fill(20, io_decoder.instr(31)) ## io_decoder.instr(31, 25) ## io_decoder.instr(11, 7)
     }
+    is(RISCV_OP.JAL){
+      io_decoder.instr_type := RISCV_TYPE(opcode.asUInt ## Fill(3, 0.U) ## Fill(7, 0.U))
+      io_decoder.valid := opcode =/= RISCV_OP.UNKNOWN && io_decoder.instr_type =/= RISCV_TYPE.UNKNOWN
+      io_decoder.rs1 := 0.U
+      io_decoder.rs2 := 0.U
+      io_decoder.rd := RD
+      io_decoder.imm := (Cat(Fill(12, io_decoder.instr(31)), io_decoder.instr(31), io_decoder.instr(19, 12), io_decoder.instr(20), io_decoder.instr(30, 21))) << 1
+    }
+    is(RISCV_OP.JALR){
+      io_decoder.instr_type := RISCV_TYPE(opcode.asUInt ## funct3.asUInt ## Fill(7, 0.U))
+      io_decoder.valid := opcode =/= RISCV_OP.UNKNOWN && io_decoder.instr_type =/= RISCV_TYPE.UNKNOWN
+      io_decoder.rs1 := RS1
+      io_decoder.rs2 := 0.U
+      io_decoder.rd := RD
+      io_decoder.imm := (Cat(Fill(20, io_decoder.instr(31)), io_decoder.instr(31, 20)))
+    }
   }
 }
