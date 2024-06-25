@@ -50,12 +50,11 @@ class RV32I (
       io_pc.pc_wdata := Mux(branch_unit.io_branch.branch_taken, io_pc.pc + decoder.io_decoder.imm, (io_pc.pc + 4.U))
     }
     is(NEXT_PC_SELECT.ALU_OUT_ALIGNED) {
-      
-    when(control_unit.io_ctrl.instr_type === RISCV_TYPE.jalr) {
-    io_pc.pc_wdata := alu.io_alu.result & "hfffffffe".U
-    }.otherwise {
-    io_pc.pc_wdata := alu.io_alu.result
-    }
+      when(control_unit.io_ctrl.instr_type === RISCV_TYPE.jalr) {
+          io_pc.pc_wdata := alu.io_alu.result & "hfffffffe".U // Align the result to 4 bytes
+        }.otherwise {
+          io_pc.pc_wdata := alu.io_alu.result
+        }
     }
 
   }
@@ -76,6 +75,14 @@ class RV32I (
     }
     is(REG_WRITE_SEL.PC_PLUS_4) {
       io_reg.reg_write_data := io_pc.pc + 4.U
+    }
+    is(REG_WRITE_SEL.MEM_OUT_SIGN_EXTENDED) {
+        // Directly write the memory data to the register, assuming it has been appropriately processed
+        io_reg.reg_write_data := io_data.data_rdata
+    }
+    is(REG_WRITE_SEL.MEM_OUT_ZERO_EXTENDED) {
+        // Directly write the memory data to the register, assuming it has been appropriately processed
+        io_reg.reg_write_data := io_data.data_rdata
     }
   }
   

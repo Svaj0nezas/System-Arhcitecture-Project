@@ -101,6 +101,66 @@ class ControlUnit extends AbstractControlUnit {
         io_ctrl.reg_we := true.B
         io_ctrl.next_pc_select := NEXT_PC_SELECT.ALU_OUT_ALIGNED
       }
+      is(RISCV_OP.LOAD){
+        switch(RISCV_TYPE.getFunct3(io_ctrl.instr_type)) {
+          is(RISCV_FUNCT3.F000){//LB
+            stalled := STALL_REASON.EXECUTION_UNIT
+            io_ctrl.reg_we := true.B
+            io_ctrl.alu_control := ALU_CONTROL.ADD
+            io_ctrl.alu_op_1_sel := ALU_OP_1_SEL.RS1
+            io_ctrl.alu_op_2_sel := ALU_OP_2_SEL.IMM
+            io_ctrl.data_req := true.B
+            io_ctrl.data_we := false.B
+            io_ctrl.data_be := "b0001".U
+            io_ctrl.reg_write_sel := REG_WRITE_SEL.MEM_OUT_SIGN_EXTENDED
+          }
+          is(RISCV_FUNCT3.F010) { // LW
+            stalled := STALL_REASON.EXECUTION_UNIT
+            io_ctrl.reg_we := true.B
+            io_ctrl.alu_control := ALU_CONTROL.ADD
+            io_ctrl.alu_op_1_sel := ALU_OP_1_SEL.RS1
+            io_ctrl.alu_op_2_sel := ALU_OP_2_SEL.IMM
+            io_ctrl.data_req := true.B
+            io_ctrl.data_we := false.B
+            io_ctrl.reg_write_sel := REG_WRITE_SEL.MEM_OUT_ZERO_EXTENDED  // No extension needed for word
+            io_ctrl.data_be := "b1111".U  // All four bytes are relevant
+        }
+        is(RISCV_FUNCT3.F001) { // LH
+          stalled := STALL_REASON.EXECUTION_UNIT
+          io_ctrl.reg_we := true.B
+          io_ctrl.alu_control := ALU_CONTROL.ADD
+          io_ctrl.alu_op_1_sel := ALU_OP_1_SEL.RS1
+          io_ctrl.alu_op_2_sel := ALU_OP_2_SEL.IMM
+          io_ctrl.data_req := true.B
+          io_ctrl.data_we := false.B
+          io_ctrl.data_be := "b0011".U  // Load the two lowest bytes
+          io_ctrl.reg_write_sel := REG_WRITE_SEL.MEM_OUT_SIGN_EXTENDED
+        }
+        is(RISCV_FUNCT3.F100) { // LBU: Load Byte Unsigned
+          stalled := STALL_REASON.EXECUTION_UNIT
+          io_ctrl.reg_we := true.B
+          io_ctrl.alu_control := ALU_CONTROL.ADD
+          io_ctrl.alu_op_1_sel := ALU_OP_1_SEL.RS1
+          io_ctrl.alu_op_2_sel := ALU_OP_2_SEL.IMM
+          io_ctrl.data_req := true.B
+          io_ctrl.data_we := false.B
+          io_ctrl.data_be := "b0001".U  // Load only the lowest byte
+          io_ctrl.reg_write_sel := REG_WRITE_SEL.MEM_OUT_ZERO_EXTENDED
+        }
+        is(RISCV_FUNCT3.F101) { // LHU: Load Half-word Unsigned
+          stalled := STALL_REASON.EXECUTION_UNIT
+          io_ctrl.reg_we := true.B
+          io_ctrl.alu_control := ALU_CONTROL.ADD
+          io_ctrl.alu_op_1_sel := ALU_OP_1_SEL.RS1
+          io_ctrl.alu_op_2_sel := ALU_OP_2_SEL.IMM
+          io_ctrl.data_req := true.B
+          io_ctrl.data_we := false.B
+          io_ctrl.data_be := "b0011".U  // Load the two lowest bytes
+          io_ctrl.reg_write_sel := REG_WRITE_SEL.MEM_OUT_ZERO_EXTENDED
+        }
+        
+        }
+      }
     }
   }
 }
