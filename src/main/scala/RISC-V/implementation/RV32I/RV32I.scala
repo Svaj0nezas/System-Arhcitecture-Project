@@ -76,14 +76,14 @@ class RV32I (
     is(REG_WRITE_SEL.PC_PLUS_4) {
       io_reg.reg_write_data := io_pc.pc + 4.U
     }
-    is(REG_WRITE_SEL.MEM_OUT_SIGN_EXTENDED) {
-        // Directly write the memory data to the register, assuming it has been appropriately processed
-        io_reg.reg_write_data := io_data.data_rdata
-    }
     is(REG_WRITE_SEL.MEM_OUT_ZERO_EXTENDED) {
-        // Directly write the memory data to the register, assuming it has been appropriately processed
         io_reg.reg_write_data := io_data.data_rdata
     }
+    is(REG_WRITE_SEL.MEM_OUT_SIGN_EXTENDED) {
+        
+        io_reg.reg_write_data := io_data.data_rdata
+    }
+    
   }
   
   // Assign the control unit inputs
